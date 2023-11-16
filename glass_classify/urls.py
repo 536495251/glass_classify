@@ -26,5 +26,6 @@ urlpatterns = [
     path('upload/', app.views.upload, name='upload'),
     path('index/', app.views.index, name='index'),
     path('train_model/', app.views.train_model, name='train_model'),
+    path('model_predict/', app.views.model_predict, name='model_predict'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

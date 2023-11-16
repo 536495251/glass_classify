@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>预测</title>
+</head>
+<body>
+<form id="predictionForm">
+   {% for variable_name in request.session.column_name_list %}
+       {% if variable_name != request.session.output %}
+        <label for="{{ variable_name }}">{{ variable_name }}：</label>
+        <input type="text" id="{{ variable_name }}" name="{{ variable_name }}">
+        <br>
+       {% endif %} 
+    {% endfor %}
+
+    <input type="submit" value="预测">
+</form>
+
+<div id="predictionResult"></div>
+
+<script>
+    document.getElementById('predictionForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        var inputData = {};
+
+        {% for variable_name in request.session.column_name_list %}
+            {% if variable_name != request.session.output %}
+            var variableName = "{{ variable_name }}";
+            var variableValue = document.getElementById(variableName).value;
+
+            inputData[variableName] = variableValue;
+            {% endif %}
+        {% endfor %}
+
+        // 发送数据到后端
+        fetch('{% url 'model_predict' %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ inputData: inputData }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 处理从后端返回的预测结果
+            var predictionResult = document.getElementById('predictionResult');
+            predictionResult.innerHTML = '预测结果：' + data.prediction;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+</script>
+
+
+
+</body>
+</html>
