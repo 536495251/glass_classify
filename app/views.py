@@ -1,3 +1,6 @@
+import json
+
+import joblib
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render
@@ -12,18 +15,17 @@ from django.conf import settings
 def upload(request):
     global column_name, data, excel_file
     if request.method == 'GET':
-        return render(request, 'upload0.html')
+        return render(request, 'upload.html')
     if request.method == 'POST' and request.FILES.get('excelFile'):
         excel_file = request.FILES['excelFile']
         fs = FileSystemStorage()
         fs.save(excel_file.name, excel_file)
         data = pd.read_excel(excel_file)
-        column_name = data.iloc[0].values
-        column_name_list = column_name.tolist()
-        print(column_name_list)
-        request.session['column_name_list'] = column_name_list
+        column_names_list = data.columns.tolist()
+        print(column_names_list)
+        request.session['column_name_list'] = column_names_list
         request.session['file_name'] = excel_file.name
-        return render(request, 'upload0.html')
+        return render(request, 'upload.html')
 
 
 def index(request):
@@ -35,20 +37,26 @@ def index(request):
 
 def train_model(request):
     if request.method == 'GET':
-        render(request,'upload0.html')
+        render(request, 'upload.html')
     if request.method == 'POST':
-        max_depth = int(request.POST.get('maxDepth'))
-        min_samples_split = int(request.POST.get('minSamplesSplit'))
-        min_samples_leaf = int(request.POST.get('minSamplesLeaf'))
-        output_variable = request.POST.get('outputVariable')
-        print(max_depth)
+        raw_data = request.body.decode('utf-8')
+        json_data = json.loads(raw_data)
+        # 从JSON数据中提取相应的字段
+        max_depth = int(json_data.get('maxDepth', 0))
+        min_samples_split = int(json_data.get('minSamplesSplit', 0))
+        min_samples_leaf = int(json_data.get('minSamplesLeaf', 0))
+        output_variable = json_data.get('outputVariable', '')
         file_name = request.session.get('file_name', None)
         if file_name is None:
+            print('file None')
             return JsonResponse({'error': 'No file name provided'})
         try:
-            file_path = f'{settings.MEDIA_ROOT}/upload/{file_name}'
+            file_path = f'{settings.MEDIA_ROOT}\\{file_name}'
+            print(file_path)
             dataset = pd.read_excel(file_path)
+            print(dataset)
         except Exception as e:
+            print('excel None')
             return JsonResponse({'error': f'Error loading dataset: {str(e)}'})
 
         # 分割数据集为训练集和测试集
@@ -60,7 +68,10 @@ def train_model(request):
         clf = DecisionTreeClassifier(max_depth=max_depth, min_samples_split=min_samples_split,
                                      min_samples_leaf=min_samples_leaf)
         clf.fit(X_train, y_train)
-
+        train_model_name_ = file_name[:file_name.index('.')]
+        model_filename = f'train_models/{train_model_name_}_decision_tree_model.joblib'
+        print(model_filename)
+        joblib.dump(clf, model_filename)
         # 在测试集上进行预测并计算准确度
         y_pred = clf.predict(X_test)
         accuracy = accuracy_score(y_test, y_pred)
@@ -68,3 +79,4 @@ def train_model(request):
         return JsonResponse({'accuracy': accuracy})
 
     return HttpResponseBadRequest('Invalid request method')
+

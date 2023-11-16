@@ -21,10 +21,10 @@ from django.conf import settings
 import app.views
 
 urlpatterns = [
-    #path("admin/", admin.site.urls),
+    # path("admin/", admin.site.urls),
     path('', app.views.upload),
     path('upload/', app.views.upload, name='upload'),
-     path('index/', app.views.index, name='index'),
-     path('train_model/', app.views.index, name='train_model'),
+    path('index/', app.views.index, name='index'),
+    path('train_model/', app.views.train_model, name='train_model'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

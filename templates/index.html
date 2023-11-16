@@ -46,7 +46,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('result').innerHTML = '<p>模型训练成功！准确度: ' + data.accuracy + '</p>';
+                document.getElementById('result').innerHTML = '<p>模型训练成功！准确度: ' + data.accuracy +'<button >进入预测</button>'+ '</p>';
             })
             .catch((error) => {
                 alert('错误！'+error)

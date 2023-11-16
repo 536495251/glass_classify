@@ -7,9 +7,55 @@
 </head>
 <body>
  <h1>Excel文件上传</h1>
- <form method="post" action="{% url 'upload' %}">
-        <input type="file" id="excel_file" name="excelFile" accept=".xlsx, .xls">
+<form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="excelFile" accept=".xlsx, .xls">
         <input type="submit" value="上传">
- </form>
+</form>
+<script>
+
+        $(document).ready(function () {
+            $("#uploadForm").submit(function (event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+            // Get the file input
+            var fileInput = $('input[type="file"]')[0];
+
+            // Check if a file is selected
+            if (fileInput.files.length > 0) {
+                // Get the first file
+                var file = fileInput.files[0];
+
+                // Check if the file name contains Chinese characters
+                var containsChinese = /[\u4E00-\u9FA5]/.test(file.name);
+
+                // If the file name contains Chinese characters, prevent the form submission and prompt for renaming
+                if (containsChinese) {
+                    alert("文件名包含中文字符，请重新命名文件后上传。");
+                    return;
+                }
+
+                // Encode the file name
+                var encodedFileName = encodeURIComponent(file.name);
+
+                // Append the encoded file name to the FormData
+                formData.append('encodedFileName', encodedFileName);
+            }
+                $.ajax({
+                    url: {% url 'upload' %},
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success:function (data){
+                        alert('上传成功！')
+                        window.location.href = '{% url 'index' %}';
+                    },
+                    error: function (xhr, status, error) {
+                        alert("上传失败：" + error);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
