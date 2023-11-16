@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Excel文件上传</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+ <h1>Excel文件上传</h1>
+ <form method="post" action="{% url 'upload' %}">
+        <input type="file" id="excel_file" name="excelFile" accept=".xlsx, .xls">
+        <input type="submit" value="上传">
+ </form>
+</body>
+</html>

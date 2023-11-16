@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+</head>
+<body>
+<h1>选择训练参数</h1>
+ <h3>当前文件{{ file_name }}</h3>
+<form id="parameterForm">
+        <label for="maxDepth">最大深度:</label>
+        <input type="number" id="maxDepth" name="maxDepth" min="1" max="10" required>
+
+        <label for="minSamplesSplit">最小分裂样本数:</label>
+        <input type="number" id="minSamplesSplit" name="minSamplesSplit" min="2" max="10" required>
+
+        <label for="minSamplesLeaf">最小叶子节点样本数:</label>
+        <input type="number" id="minSamplesLeaf" name="minSamplesLeaf" min="1" max="10" required>
+
+     <label for="outputVariable">选择输出变量:</label>
+    <select id="outputVariable" name="outputVariable">
+        {% for column in request.session.column_name_list %}
+            <option value="{{ column }}">{{ column }}</option>
+        {% endfor %}
+    </select>
+        <button type="button" onclick="trainModel()">开始训练</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        function trainModel() {
+            var formData = {
+                'maxDepth': document.getElementById('maxDepth').value,
+                'minSamplesSplit': document.getElementById('minSamplesSplit').value,
+                'minSamplesLeaf': document.getElementById('minSamplesLeaf').value,
+                'outputVariable': document.getElementById('outputVariable').value
+            };
+
+            fetch('{% url 'train_model' %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = '<p>模型训练成功！准确度: ' + data.accuracy + '</p>';
+            })
+            .catch((error) => {
+                alert('错误！'+error)
+            });
+        }
+    </script>
+</body>
+</html>
